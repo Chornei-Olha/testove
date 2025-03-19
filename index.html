@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Редагування рядка</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+      #container {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        text-align: center;
+        width: 300px;
+      }
+      #text-input {
+        width: 90%;
+        padding: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 16px;
+      }
+      button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+      #text-output {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        margin-top: 10px;
+        min-height: 30px;
+        justify-content: center;
+      }
+      .letter {
+        display: inline-block;
+        padding: 8px 12px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        cursor: pointer;
+        user-select: none;
+        background-color: #ffffff;
+        font-size: 18px;
+        transition: background-color 0.3s, transform 0.2s;
+      }
+      .letter:hover {
+        background-color: #f1f1f1;
+      }
+      .selected {
+        background-color: yellow;
+        transform: scale(1.1);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="container">
+      <input type="text" id="text-input" placeholder="Введіть текст" />
+      <button onclick="updateText()">Відобразити</button>
+      <div id="text-output"></div>
+    </div>
+
+    <script>
+      let selectedLetters = new Set();
+
+      function updateText() {
+        const input = document.getElementById("text-input").value;
+        const output = document.getElementById("text-output");
+        output.innerHTML = "";
+        input.split("").forEach((char, index) => {
+          let span = document.createElement("span");
+          span.textContent = char;
+          span.classList.add("letter");
+          span.setAttribute("draggable", true);
+          span.dataset.index = index;
+          span.addEventListener("click", toggleSelection);
+          span.addEventListener("dragstart", dragStart);
+          span.addEventListener("dragover", dragOver);
+          span.addEventListener("drop", drop);
+          output.appendChild(span);
+        });
+      }
+
+      function toggleSelection(event) {
+        if (event.ctrlKey) {
+          event.target.classList.toggle("selected");
+          if (selectedLetters.has(event.target)) {
+            selectedLetters.delete(event.target);
+          } else {
+            selectedLetters.add(event.target);
+          }
+        }
+      }
+
+      function dragStart(event) {
+        event.dataTransfer.setData("text/plain", event.target.dataset.index);
+      }
+
+      function dragOver(event) {
+        event.preventDefault();
+      }
+
+      function drop(event) {
+        event.preventDefault();
+        const draggedIndex = event.dataTransfer.getData("text/plain");
+        const draggedElement = document.querySelector(
+          `[data-index="${draggedIndex}"]`
+        );
+        const targetElement = event.target;
+
+        if (
+          targetElement.classList.contains("letter") &&
+          draggedElement !== targetElement
+        ) {
+          let tempIndex = draggedElement.dataset.index;
+          draggedElement.dataset.index = targetElement.dataset.index;
+          targetElement.dataset.index = tempIndex;
+
+          let parent = targetElement.parentNode;
+          parent.insertBefore(draggedElement, targetElement.nextSibling);
+          parent.insertBefore(targetElement, draggedElement);
+        }
+      }
+    </script>
+  </body>
+</html>
